@@ -1,4 +1,47 @@
 // ─────────────────────────────────────────────
+// API KEY PERSISTENCE (localStorage)
+// ─────────────────────────────────────────────
+const LS_KEY = 'quandale_gemini_key';
+
+function loadSavedKey() {
+  const saved = localStorage.getItem(LS_KEY);
+  if (saved) {
+    document.getElementById('apiKey').value = saved;
+    setKeyBadge(true);
+  }
+}
+
+function saveKey() {
+  const val = document.getElementById('apiKey').value.trim();
+  if (!val) { setStatus('DROP A KEY FIRST BESTIE 💀', 'error'); return; }
+  localStorage.setItem(LS_KEY, val);
+  setKeyBadge(true);
+  const btn = document.getElementById('saveKeyBtn');
+  btn.textContent = '✅ SAVED FR';
+  setTimeout(() => btn.textContent = '💾 SAVE', 2000);
+}
+
+function clearKey() {
+  localStorage.removeItem(LS_KEY);
+  document.getElementById('apiKey').value = '';
+  setKeyBadge(false);
+  const btn = document.getElementById('clearKeyBtn');
+  btn.textContent = '💨 GONE';
+  setTimeout(() => btn.textContent = '🗑 CLEAR', 2000);
+}
+
+function setKeyBadge(saved) {
+  const badge = document.getElementById('keyBadge');
+  if (saved) {
+    badge.textContent = '✅ SAVED';
+    badge.className = 'key-badge key-badge--saved';
+  } else {
+    badge.textContent = 'NOT SAVED';
+    badge.className = 'key-badge key-badge--none';
+  }
+}
+
+// ─────────────────────────────────────────────
 // MEME IMAGES
 // ─────────────────────────────────────────────
 const MEME_IMAGES = [
@@ -358,3 +401,21 @@ document.addEventListener('keydown', (e) => {
 // Preload voices (Chrome async)
 window.speechSynthesis.onvoiceschanged = () => {};
 window.speechSynthesis.getVoices();
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+document.getElementById('saveKeyBtn').addEventListener('click', saveKey);
+document.getElementById('clearKeyBtn').addEventListener('click', clearKey);
+
+// Auto-save on input after short debounce (quality of life)
+let saveDebounce = null;
+document.getElementById('apiKey').addEventListener('input', () => {
+  clearTimeout(saveDebounce);
+  saveDebounce = setTimeout(() => {
+    const val = document.getElementById('apiKey').value.trim();
+    if (val.startsWith('AIza') && val.length > 20) saveKey();
+  }, 800);
+});
+
+loadSavedKey();

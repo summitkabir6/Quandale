@@ -66,9 +66,13 @@
 
     <!-- API KEY -->
     <div class="api-setup">
-      <label>🔑 GEMINI API KEY (stays in your browser, bestie)</label>
-      <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off" />
-      <small>Get one free at aistudio.google.com → stays local, never uploaded, fr fr</small>
+      <label>🔑 GEMINI API KEY <span id="keyBadge" class="key-badge key-badge--none">NOT SAVED</span></label>
+      <div class="api-input-row">
+        <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off" />
+        <button class="btn btn-save-key" id="saveKeyBtn">💾 SAVE</button>
+        <button class="btn btn-clear-key" id="clearKeyBtn">🗑 CLEAR</button>
+      </div>
+      <small>Saved to your browser's localStorage — persists across refreshes, never leaves your device, fr fr</small>
     </div>
 
     <!-- INPUT -->
