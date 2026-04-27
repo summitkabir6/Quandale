@@ -143,90 +143,96 @@ function randomMemeFlash() {
 }
 
 // ─────────────────────────────────────────────
+// IMAGE UPLOAD
+// ─────────────────────────────────────────────
+let uploadedFile = null;
+
+const uploadZone = document.getElementById('imageUploadZone');
+const imageInput = document.getElementById('imageInput');
+
+uploadZone.addEventListener('click', () => imageInput.click());
+
+uploadZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadZone.classList.add('drag-over');
+});
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleFileUpload(file);
+});
+
+imageInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) handleFileUpload(file);
+});
+
+function handleFileUpload(file) {
+  uploadedFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const preview = document.getElementById('imagePreview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    document.getElementById('uploadPrompt').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ─────────────────────────────────────────────
 // TRANSLATION — server-side proxy
 // ─────────────────────────────────────────────
-async function translateWithProxy(text) {
+async function translateWithProxy(imageBase64, mimeType, context) {
   const response = await fetch('/api/Translate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ imageBase64, mimeType, context })
   });
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     throw new Error(err?.error || `API error ${response.status}`);
   }
   const data = await response.json();
-  return data.result || 'fr fr no words detected bestie 💀';
+  return data.result || 'fr fr no homework detected bestie 💀';
 }
-
-// ─────────────────────────────────────────────
-// SPEECH RECOGNITION
-// ─────────────────────────────────────────────
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let isRecording  = false;
-
-const micBtn = document.getElementById('micBtn');
-
-micBtn.addEventListener('click', () => {
-  if (!SpeechRecognition) {
-    setStatus('Mic not supported in this browser bestie 💀', 'error');
-    return;
-  }
-  if (isRecording) { recognition?.stop(); return; }
-
-  recognition = new SpeechRecognition();
-  recognition.lang = 'en-US';
-  recognition.interimResults = false;
-
-  recognition.onstart = () => {
-    isRecording = true;
-    micBtn.classList.add('recording');
-    micBtn.textContent = '⏹ STOP';
-    setStatus('🎤 Listening... speak your corporate slop...', 'loading');
-  };
-  recognition.onresult = (e) => {
-    document.getElementById('inputText').value = e.results[0][0].transcript;
-    setStatus('Got it! Hit translate, real one 🗿', 'success');
-  };
-  recognition.onerror = (e) => {
-    setStatus(`Mic said no: ${e.error} 💀`, 'error');
-  };
-  recognition.onend = () => {
-    isRecording = false;
-    micBtn.classList.remove('recording');
-    micBtn.textContent = '🎤 SPEAK';
-  };
-
-  recognition.start();
-});
 
 // ─────────────────────────────────────────────
 // TRANSLATE
 // ─────────────────────────────────────────────
 document.getElementById('translateBtn').addEventListener('click', async () => {
-  const text = document.getElementById('inputText').value.trim();
-
-  if (!text) { setStatus('TYPE SOMETHING FIRST BESTIE 💀', 'error'); return; }
+  if (!uploadedFile) { setStatus('DROP YOUR HOMEWORK FIRST BESTIE 💀', 'error'); return; }
 
   const btn = document.getElementById('translateBtn');
   btn.disabled = true;
-  btn.textContent = '🔄 COOKING...';
-  setStatus('Quandale is translating your NPC speak... 🗿', 'loading');
+  btn.textContent = '🔄 STUDYING...';
+  setStatus('Quandale is analyzing your homework... 🗿', 'loading');
 
   try {
-    const result = await translateWithProxy(text);
+    const imageBase64 = await fileToBase64(uploadedFile);
+    const context = document.getElementById('contextInput').value.trim();
+    const result = await translateWithProxy(imageBase64, uploadedFile.type, context);
     document.getElementById('outputText').textContent = result;
     document.getElementById('outputSection').classList.add('visible');
     document.getElementById('speakBtn').disabled = false;
-    setStatus('TRANSLATION COMPLETE FR FR 🔥', 'success');
+    setStatus('EXPLANATION COMPLETE FR FR 🔥', 'success');
     playRandomSound();
     randomMemeFlash();
   } catch (err) {
     setStatus(`L TAKE: ${err.message} 💀`, 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = '🗿 TRANSLATE THIS SLOP';
+    btn.textContent = '🗿 EXPLAIN THIS SLOP';
   }
 });
 
@@ -260,7 +266,7 @@ document.getElementById('speakBtn').addEventListener('click', () => {
 
   utter.onstart = () => {
     speaking = true;
-    setStatus('🔊 QUANDALE IS SPEAKING... NO INTERRUPTIONS 🗿', 'speaking');
+    setStatus('🔊 QUANDALE IS EXPLAINING... NO INTERRUPTIONS 🗿', 'speaking');
     document.getElementById('outputSection').classList.add('glitch-active');
     memeInterval = setInterval(() => {
       playRandomSound();
@@ -311,7 +317,7 @@ function setStatus(msg, type) {
 // ─────────────────────────────────────────────
 // CTRL+ENTER TO TRANSLATE
 // ─────────────────────────────────────────────
-document.getElementById('inputText').addEventListener('keydown', (e) => {
+document.getElementById('contextInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && e.ctrlKey) {
     document.getElementById('translateBtn').click();
   }

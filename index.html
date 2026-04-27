@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QUANDALE DINGLE - Corporate Brainrot Translator</title>
+  <title>QUANDALE DINGLE - Sigma Homework Explainer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Comic+Neue:wght@700&family=Permanent+Marker&display=swap" rel="stylesheet">
@@ -23,17 +23,25 @@
     <div class="card card--title">
       <span class="quandale-face">🗿</span>
       <div class="title-main">QUANDALE DINGLE</div>
-      <div class="title-sub">Corporate Brainrot Translator</div>
-      <div class="subtitle-tag">Powered by Absolute Delusion</div>
+      <div class="title-sub">Sigma Homework Explainer</div>
+      <div class="subtitle-tag">Powered by Skibidi Science</div>
     </div>
 
     <!-- INPUT CARD -->
     <div class="card card--input">
-      <label class="card-label card-label--green" for="inputText">[ DROP YOUR CORPORATE SLOP ]</label>
-      <textarea id="inputText" placeholder="Paste your corporate drivel here... synergize the paradigm, leverage stakeholder alignment, circle back offline..."></textarea>
+      <label class="card-label card-label--green">[ DROP YOUR HOMEWORK FR FR ]</label>
+      <div class="upload-zone" id="imageUploadZone">
+        <input type="file" id="imageInput" accept="image/*" style="display:none">
+        <div id="uploadPrompt">
+          <div class="upload-icon">📸</div>
+          <div class="upload-text">DROP YOUR HOMEWORK HERE</div>
+          <div class="upload-sub">or click to upload</div>
+        </div>
+        <img id="imagePreview" src="" alt="homework preview" style="display:none">
+      </div>
+      <input type="text" class="context-input" id="contextInput" placeholder="any extra context? (optional)">
       <div class="btn-row">
-        <button class="btn btn-mic" id="micBtn">🎤 SPEAK</button>
-        <button class="btn btn-translate" id="translateBtn">🗿 TRANSLATE THIS SLOP</button>
+        <button class="btn btn-translate" id="translateBtn">🗿 EXPLAIN THIS SLOP</button>
       </div>
     </div>
 
@@ -42,7 +50,7 @@
 
     <!-- OUTPUT CARD -->
     <div class="card card--output" id="outputSection">
-      <label class="card-label card-label--pink">[ BRAINROT OUTPUT ]</label>
+      <label class="card-label card-label--pink">[ QUANDALE'S EXPLANATION NO CAP ]</label>
       <div class="output-text" id="outputText"></div>
       <div class="btn-row">
         <button class="btn btn-speak" id="speakBtn">🔊 READ IT OUT LOUD</button>
@@ -53,7 +61,7 @@
   </div>
 
   <footer>
-    QUANDALE DINGLE © 2025 — ALL SIGMA RIGHTS RESERVED — NO CAP 🗿
+    QUANDALE DINGLE © 2025 — ALL SIGMA ACADEMIC RIGHTS RESERVED 🗿
   </footer>
 
   <script src="app.js"></script>
