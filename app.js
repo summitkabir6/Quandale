@@ -1,47 +1,4 @@
 // ─────────────────────────────────────────────
-// API KEY PERSISTENCE (localStorage)
-// ─────────────────────────────────────────────
-const LS_KEY = 'quandale_gemini_key';
-
-function loadSavedKey() {
-  const saved = localStorage.getItem(LS_KEY);
-  if (saved) {
-    document.getElementById('apiKey').value = saved;
-    setKeyBadge(true);
-  }
-}
-
-function saveKey() {
-  const val = document.getElementById('apiKey').value.trim();
-  if (!val) { setStatus('DROP A KEY FIRST BESTIE 💀', 'error'); return; }
-  localStorage.setItem(LS_KEY, val);
-  setKeyBadge(true);
-  const btn = document.getElementById('saveKeyBtn');
-  btn.textContent = '✅ SAVED FR';
-  setTimeout(() => btn.textContent = '💾 SAVE', 2000);
-}
-
-function clearKey() {
-  localStorage.removeItem(LS_KEY);
-  document.getElementById('apiKey').value = '';
-  setKeyBadge(false);
-  const btn = document.getElementById('clearKeyBtn');
-  btn.textContent = '💨 GONE';
-  setTimeout(() => btn.textContent = '🗑 CLEAR', 2000);
-}
-
-function setKeyBadge(saved) {
-  const badge = document.getElementById('keyBadge');
-  if (saved) {
-    badge.textContent = '✅ SAVED';
-    badge.className = 'key-badge key-badge--saved';
-  } else {
-    badge.textContent = 'NOT SAVED';
-    badge.className = 'key-badge key-badge--none';
-  }
-}
-
-// ─────────────────────────────────────────────
 // MEME IMAGES
 // ─────────────────────────────────────────────
 const MEME_IMAGES = [
@@ -186,37 +143,20 @@ function randomMemeFlash() {
 }
 
 // ─────────────────────────────────────────────
-// GEMINI API
+// TRANSLATION — server-side proxy
 // ─────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are Quandale Dingle, the ultimate Gen Z brainrot oracle. Your job is to translate corporate/professional text into pure unhinged Gen Z internet slang.
-
-Rules:
-- Use words like: no cap, fr fr, bussin, slay, rizz, gyatt, skibidi, sigma, NPC, Ohio, based, lowkey, highkey, it's giving, deadass, bestie, bet, main character, understood the assignment, delulu, real one, mid, W, L, caught in 4k, era, villain arc, slay, ate and left no crumbs
-- Keep the meaning but make it sound like a 15 year old on TikTok who just drank 4 monsters
-- Add 💀🗿🔥😤 emojis liberally
-- Random caps for EMPHASIS
-- Keep it SHORT - max 3-5 sentences
-- Be unhinged but still convey the original meaning
-- Do NOT explain yourself, just output the brainrot translation directly`;
-
-async function translateWithGemini(text, apiKey) {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ parts: [{ text: `Translate this corporate text into brainrot: "${text}"` }] }]
-      })
-    }
-  );
+async function translateWithProxy(text) {
+  const response = await fetch('/api/Translate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  });
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `API error ${response.status}`);
+    throw new Error(err?.error || `API error ${response.status}`);
   }
   const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'fr fr no words detected bestie 💀';
+  return data.result || 'fr fr no words detected bestie 💀';
 }
 
 // ─────────────────────────────────────────────
@@ -265,11 +205,9 @@ micBtn.addEventListener('click', () => {
 // TRANSLATE
 // ─────────────────────────────────────────────
 document.getElementById('translateBtn').addEventListener('click', async () => {
-  const text   = document.getElementById('inputText').value.trim();
-  const apiKey = document.getElementById('apiKey').value.trim();
+  const text = document.getElementById('inputText').value.trim();
 
-  if (!text)   { setStatus('TYPE SOMETHING FIRST BESTIE 💀', 'error'); return; }
-  if (!apiKey) { setStatus('DROP THE API KEY OR IT AINT BUSSIN FR 😤', 'error'); return; }
+  if (!text) { setStatus('TYPE SOMETHING FIRST BESTIE 💀', 'error'); return; }
 
   const btn = document.getElementById('translateBtn');
   btn.disabled = true;
@@ -277,7 +215,7 @@ document.getElementById('translateBtn').addEventListener('click', async () => {
   setStatus('Quandale is translating your NPC speak... 🗿', 'loading');
 
   try {
-    const result = await translateWithGemini(text, apiKey);
+    const result = await translateWithProxy(text);
     document.getElementById('outputText').textContent = result;
     document.getElementById('outputSection').classList.add('visible');
     document.getElementById('speakBtn').disabled = false;
@@ -310,7 +248,7 @@ document.getElementById('speakBtn').addEventListener('click', () => {
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
 
-  const voices   = window.speechSynthesis.getVoices();
+  const voices    = window.speechSynthesis.getVoices();
   const preferred = voices.find(v => v.name.includes('Google') && v.lang === 'en-US')
     || voices.find(v => v.lang === 'en-US')
     || voices[0];
@@ -383,7 +321,7 @@ document.getElementById('inputText').addEventListener('keydown', (e) => {
 // KONAMI CODE EASTER EGG
 // ─────────────────────────────────────────────
 let konamiSeq = [];
-const KONAMI  = [38,38,40,40,37,39,37,39,66,65];
+const KONAMI  = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
 
 document.addEventListener('keydown', (e) => {
   konamiSeq.push(e.keyCode);
@@ -401,21 +339,3 @@ document.addEventListener('keydown', (e) => {
 // Preload voices (Chrome async)
 window.speechSynthesis.onvoiceschanged = () => {};
 window.speechSynthesis.getVoices();
-
-// ─────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────
-document.getElementById('saveKeyBtn').addEventListener('click', saveKey);
-document.getElementById('clearKeyBtn').addEventListener('click', clearKey);
-
-// Auto-save on input after short debounce (quality of life)
-let saveDebounce = null;
-document.getElementById('apiKey').addEventListener('input', () => {
-  clearTimeout(saveDebounce);
-  saveDebounce = setTimeout(() => {
-    const val = document.getElementById('apiKey').value.trim();
-    if (val.startsWith('AIza') && val.length > 20) saveKey();
-  }, 800);
-});
-
-loadSavedKey();
